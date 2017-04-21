@@ -9,7 +9,7 @@ from copy import deepcopy
 from readchar import readchar
 
 class Dxl(object):
-    def __init__(self,port_id=0, scan_limit=25, lock=-1):
+    def __init__(self,port_id=0, scan_limit=25, lock=-1,debug=False):
         # Initializes Dynamixel Object
         # Port ID is zero by default
         ports = pypot.dynamixel.get_available_ports()
@@ -28,6 +28,16 @@ class Dxl(object):
 
         self.dxl_io = dxl_io
         self.ids = ids
+        debug_speeds = [90 for x in ids]
+        unleash = [1023 for x in ids]
+        if debug:
+            dxl_io.set_moving_speed(dict(zip(ids,debug_speeds)))
+        else:
+            dxl_io.set_moving_speed(dict(zip(ids, unleash)))
+
+    def directWrite(self,dicta):
+        self.dxl_io.set_goal_position(dicta)
+
     def setPos(self,pose):
         '''
         for k in pose.keys():
@@ -40,7 +50,6 @@ class Dxl(object):
 
     def getPos(self):
         return Motion(1," ".join(map(str,self.dxl_io.get_present_position(self.ids))),0)
-
 
 class XmlTree(object):
 
@@ -185,11 +194,10 @@ class Action():
 darwin = {1: 90, 2: -90, 3: 67.5, 4: -67.5, 7: 45, 8: -45, 9: 'i', 10: 'i', 13: 'i', 14: 'i', 17: 'i', 18: 'i'}
 abmath = {11: 15, 12: -15, 13: -10, 14: 10, 15: -5, 16: 5}
 hand = {5: 60, 6: -60}
-dxl = Dxl(lock=20)
-tree = XmlTree('data2.xml')
-tree2 = XmlTree('DRIBLE.xml')
+tree = XmlTree('data.xml')
+tree2 = XmlTree('soccer.xml')
 walk = Action(tree.superparsexml("22 F_S_L",offsets=[darwin]))
-balance = MotionSet(tree.parsexml("152 Balance"), offsets=[darwin,hand])
+balance = MotionSet(tree.parsexml("152 Balance"), offsets=[darwin])
 moon_walk = Action(tree2.superparsexml("11 B_L_S", offsets=[darwin]))
 lback = MotionSet(tree2.parsexml("18 B_L_E"), offsets=[darwin])
 rback = MotionSet(tree2.parsexml("17 B_R_E"), offsets=[darwin])
@@ -212,20 +220,32 @@ w6 = MotionSet(tree.parsexml("37 "),speed=2.1,offsets=[darwin])
 boom_walk = Action([l_step,r_step])
 walk_init = Action([w1,w2])
 walk_motion = Action([w3,w4,w5,w6])
+
+
+
+
+
+
+
+frt = Action(tree.superparsexml("51 FRT_S_R",offsets=[darwin]))
+flt = Action(tree.superparsexml("47 FLT_S_R",offsets=[darwin]))
 #--------------------------------------------------------------------------------------------------------------#
 
 
 if __name__=='__main__':
+    dxl = Dxl(lock=20,debug=False)
     state = dxl.getPos()
     print state
     raw_input("Proceed?")
     balance.execute()
-    raw_input("Sure?")
-    moves={'w':boom_walk,'s':balance,'a':l_turn,'d':r_turn}
+    moves={'w':boom_walk,'s':balance,'a':l_turn,'d':r_turn,'q':flt,'e':frt}
 
     while True:
         k = readchar()
-        moves[k].execute()
+        if k in ['q','e','z','c']:
+            moves[k].execute(iter=1,speed=3)
+        else:
+            moves[k].execute(iter=1)
 
 
 
