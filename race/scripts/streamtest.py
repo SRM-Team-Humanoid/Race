@@ -240,13 +240,13 @@ def Move(buttonMsg):
 #--------------------------------------------------------------------------------------------------------------#
 darwin = {1: 90, 2: -90, 3: 67.5, 4: -67.5, 7: 45, 8: -45, 9: 'i', 10: 'i', 13: 'i', 14: 'i', 17: 'i', 18: 'i'}
 abmath = {11: 15, 12: -15, 13: -10, 14: 10, 15: -5, 16: 5}
-abmath_inv = {11:-15,12:15,13:10,14:-10,15:5,16:-5}
+
 inv = {1:'i', 2:'i'}
 inv_wrist = {5:'i' , 6:'i'}
 hand = {5: 60, 6: -60}
 hand_open = {5: -60, 6: 60}
 
-path = "/home/odroid/catkin_ws/src/race/scripts/"
+path = "/home/troy-rahil/catkin_ws/src/race/scripts/"
 print path+'data.xml'
 
 #Instances of xml files
@@ -255,7 +255,7 @@ tree2 = XmlTree(path+'soccer.xml')
 tree3 = XmlTree(path+'fight.xml')
 
 walk = Action(tree.superparsexml("22 F_S_L",offsets=[darwin]))
-balance = MotionSet(tree.parsexml("152 Balance"), offsets=[darwin,abmath_inv])
+balance = MotionSet(tree.parsexml("152 Balance"), offsets=[darwin])
 moon_walk = Action(tree2.superparsexml("11 B_L_S", offsets=[darwin]))
 lback = MotionSet(tree2.parsexml("18 B_L_E"), offsets=[darwin])
 rback = MotionSet(tree2.parsexml("17 B_R_E"), offsets=[darwin])
@@ -294,34 +294,36 @@ boom_walk = Action([l_step,r_step])
 bwalk_init = Action([bls1])
 bwalk_motion = Action([bls2,bls3])
 
-spd = 1.2
+spd = 0.8
 #--------------------------------------------------------------------------------------------------------------#
 if __name__=='__main__':
     rospy.init_node("rMinusRace")
-    dxl = Dxl(lock=20)
-    state = dxl.getPos()
-    print state
-    raw_input("Proceed?")
-    balance.execute()
-    raw_input("Begin")
+    # dxl = Dxl(lock=20)
+    # state = dxl.getPos()
+    # print state
+    # raw_input("Proceed?")
+    # balance.execute()
+    # raw_input("Begin")
     keysub = rospy.Subscriber('Joykey', Joystick, Move,queue_size = 1)
     while True:
         if move=='walk':
             pass
-            print "walk" + str(time.time())
-            boom_walk.execute(speed=spd)
+            print "boom_walk" + str(time.time())
+            #boom_walk.execute(speed=spd)
             if spd < 1.6:
                 spd += 0.2
         elif move=='left':
+            pass
             print "left" + str(time.time())
-            l_turn.execute()
+            #left_side_step.execute()
         elif move=='right':
+            pass
             print "right" + str(time.time())
-            r_turn.execute()
+            #right_side_step.execute()
         elif move=='balance':
             pass
             print "balance" + str(time.time())
-            balance.execute()
-            spd = 1.2
+            #balance.execute()
+            spd = 0.8
             move = ''
     rospy.spin()
